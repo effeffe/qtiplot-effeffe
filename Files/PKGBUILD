@@ -1,0 +1,65 @@
+# Maintainer: effeffe <filippo.falezza at outlook dot com>
+# Contributor: saxonbeta <saxonbeta at gmail dot com>
+# Contributor: sofasurfer <sofasurfer at gmail dot com>
+# Contributor:vicp74 <v1c70rp at gmail dot com>
+
+pkgname=qtiplot-opj
+pkgver=0.9.8.9
+pkgrel=15
+pkgdesc="Data analysis and scientific plotting - free clone of Origin, with Origin import enabled"
+# more info in: http://www.staff.science.uu.nl/~zeven101/qtiplot.html
+arch=('i686' 'x86_64')
+url="http://soft.proindependent.com/qtiplot.html"
+license=('GPL2')
+depends=('muparser' 'gsl' 'python2-pyqt' 'boost-libs' 'shared-mime-info' 'glu' 'liborigin2' \
+	'qt-assistant-compat' 'tamu-anova' 'python2')
+makedepends=('pkgconfig' 'unzip' 'boost')
+provides=('qtiplot')
+conflicts=('qtiplot')
+options=('!makeflags')
+
+source=("http://downloads.sourceforge.net/project/qtiplot.berlios/qtiplot-${pkgver}.tar.bz2"
+"http://downloads.sourceforge.net/project/qtiplot.berlios/QTeXEngine-0.3-opensource.zip"
+"opj.tar.bz2"
+)
+
+noextract=("opj.tar.bz2"
+	   "QTeXEngine-0.3-opensource.zip"
+)
+
+sha256sums=('a523ea259516d7581abaf2fe376507d152db32f71d88176cff18f5bc391b9ef0'
+            'fc60c18bd0af5947d2d7dbc3d1b5b16ed251d9f317cc548228347f081a0b67d5')
+			
+prepare() {
+cd "$srcdir"
+
+tar xf qtiplot-${pkgver}.tar.bz2
+tar xvf opj.tar.bz2 -C qtiplot-${pkgver}/
+unzip -o QTeXEngine-0.3-opensource.zip -d qtiplot-${pkgver}/3rdparty
+
+}
+
+build() {
+
+	cd "$srcdir/qtiplot-${pkgver}"
+
+	lrelease-qt4 qtiplot/translations/*
+	# fix stuff
+	sed -i 's|/usr/local/|/usr/share/|' qtiplot.pro
+	sed -i 's|<QAssistantClient>|<QtAssistant/qassistantclient.h>|' qtiplot/src/core/ApplicationWindow.cpp
+	sed -i 's#d_python_config_folder + "#"/usr/share/qtiplot#' qtiplot/src/core/ApplicationWindow.cpp
+
+	qmake-qt4 qtiplot.pro QMAKESPEC=linux-g++ QMAKE_CXXFLAGS+="-std=c++11" CONFIG+="liborigin python"
+	make QTDIR=/usr/ QMAKESPEC=linux-g++
+
+}
+package() {
+cd "$srcdir/qtiplot-${pkgver}"
+
+INSTALL_ROOT=${pkgdir} make install
+
+install -D -m644 "${srcdir}/qtiplot-${pkgver}/qtiplot_logo.png" "${pkgdir}/usr/share/pixmaps/qtiplot_logo.png"
+install -D -m644 "${srcdir}/qtiplot.desktop" "${pkgdir}/usr/share/applications/qtiplot.desktop"
+install -D -m644 "${srcdir}/qtiplot.xml" "${pkgdir}/usr/share/mime/packages/qtiplot.xml"
+
+}
