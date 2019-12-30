@@ -50,7 +50,7 @@ build() {
 	sed -i 's#d_python_config_folder + "#"/usr/share/qtiplot#' qtiplot/src/core/ApplicationWindow.cpp
 
 	qmake-qt4 qtiplot.pro QMAKESPEC=linux-g++ QMAKE_CXXFLAGS+="-std=c++11" CONFIG+="liborigin python"
-	make QTDIR=/usr/ QMAKESPEC=linux-g++
+	make QTDIR=/usr/ QMAKESPEC=linux-g++ -j$(nproc)
 
 }
 package() {
