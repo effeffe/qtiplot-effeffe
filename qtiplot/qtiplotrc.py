@@ -174,8 +174,8 @@ import_to_global("qtiUtil", None, True)
 # Provide easy access to SymPy, for symbolic mathematics
 try:
 	import_to_global("sympy", None, False)
-	print "\nsympy module successfully imported: SymPy is a Python library for symbolic mathematics."
-	print "If you are new to SymPy, start with the documentation: http://docs.sympy.org/\n"
+	print("\nsympy module successfully imported: SymPy is a Python library for symbolic mathematics.")
+	print("If you are new to SymPy, start with the documentation: http://docs.sympy.org/\n")
 except(ImportError): pass
 
 # Provide easy access to R, for statistical computing.
@@ -211,7 +211,7 @@ try:
   # make it also avilable as a function of qti.app
   setattr(app, "newTableFromRDataFrame", newTableFromRDataFrame)
 
-  print "R support successfully set up"
+  print("R support successfully set up")
 except(ImportError): pass
 
-print "Python scripting engine is ready."
+print("Python scripting engine is ready.")

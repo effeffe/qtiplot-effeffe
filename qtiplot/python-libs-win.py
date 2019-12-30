@@ -27,8 +27,9 @@
 #                                                                          #
 ############################################################################
 
-from PyQt4 import pyqtconfig
-config = pyqtconfig.Configuration()
+import PyQt5.QtCore
+import sipconfig
+config = sipconfig.Configuration()
 
-print "-L%s -lpython%d%d" % (config.py_lib_dir, config.py_version >> 16, (config.py_version  >> 8) & 0xff)
+print("-L%s -lpython%d%d" % (config.py_lib_dir, config.py_version >> 16, (config.py_version  >> 8) & 0xff))
 

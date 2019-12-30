@@ -92,9 +92,9 @@ Strictly alternating messages, starting with the client.  Certain messages are a
 """
 
 import __main__
-import cStringIO
+from io import StringIO
 import numpy
-import Queue
+import queue
 import re
 import socket
 import select
@@ -127,19 +127,19 @@ To specialize, override readMsg, sendMsg, msgNonNull, and msgIsNull.
     @ivar sock: a socket.socket
     """
 class Socket(object):
-    def __init__(self, sock, async=True):
+    def __init__(self, sock, _async=True):
         self.sock = sock
         self.sock.settimeout(1.0)
         self.stopFlag = False
         self.stopped = False
-        self.async = async
-        if async:
+        self._async = _async
+        if _async:
             self.rq = Queue.Queue()
             self.thread = Thread(target=self.readerThread)
             self.thread.start()
     def __del__(self):
         try:
-            if async:
+            if _async:
                 self.stopFlag = True
                 self.thread.join()
             else:
@@ -155,7 +155,7 @@ class Socket(object):
   if not async:
       return readMsg()
 """
-        if self.async:
+        if self._async:
             return self.rq.get(block, timeout) # raises Queue.Empty if timeout or not block
         else: # ignoring block, timeout
             return self.readMsg()
@@ -179,7 +179,7 @@ Returns a block of count bytes as a string,
 or raises Stop,
 or any relevant socket.error from select or recv.
 """
-        stopRequested = lambda: self.async and self.stopFlag
+        stopRequested = lambda: self._async and self.stopFlag
         block = ''
         while len(block) < count:
             if stopRequested():
@@ -202,7 +202,7 @@ Returns the next line as a string, including the trailing terminator,
 or raises Stop,
 or any relevant socket.error from select or recv.
 """
-        stopRequested = lambda: self.async and self.stopFlag
+        stopRequested = lambda: self._async and self.stopFlag
         block = cStringIO.StringIO()
         while True:
             if stopRequested():
@@ -361,8 +361,8 @@ def RemoteToArray(msg):
 
 class RemoteConnect(Socket):
     """Reads and writes L{RemoteMsg}s."""
-    def __init__(self, sock, async=True):
-        Socket.__init__(self, sock, async)
+    def __init__(self, sock, _async=True):
+        Socket.__init__(self, sock, _async)
     def msgNonNull(self):
         return RemoteMsg('placeholder')
     def msgIsNull(self, msg):
@@ -419,8 +419,8 @@ class RemoteSession(RemoteConnect):
 Enqueues L{RemoteMsg}s for processing on its own thread;
 you call session.process_one() frequently on the appropriate thread.
 """
-    def __init__(self, sock, async=True):
-        RemoteConnect.__init__(self, sock, async)
+    def __init__(self, sock, _async=True):
+        RemoteConnect.__init__(self, sock, _async)
         self.locals = {}
     def process_one(self):
         """Processes and answers at most one message; returns False if there are none."""
@@ -480,7 +480,7 @@ at frequent intervals, such as on a timer.  To stop the server:
                 open(sockid_path, 'w').write("%i\n"%self.port)
             except:
                 traceback.print_exc()
-        print 'Remote control started on port %i' % self.port
+        print('Remote control started on port %i' % self.port)
     def __process(self):
         """Generator function to iterate over active connections; yielding after one job, or a full circle."""
         since_yield = 0
@@ -500,7 +500,7 @@ at frequent intervals, such as on a timer.  To stop the server:
         TCPServer.stop(self)
         for conn in self.conns:
             conn.stop()
-        print 'Remote control stopped.'
+        print('Remote control stopped.')
 
 
 
@@ -521,7 +521,7 @@ class RemoteProxy(object):
                 rport = int( open(sockid_path, 'r').readline().strip() )
             except:
                 traceback.print_exc()
-                print 'No/bad sockid file (%s); falling back on port %i' % (sockid_path, rport)
+                print('No/bad sockid file (%s); falling back on port %i' % (sockid_path, rport))
         self.conn = RemoteConnect(connect_as_client(host, rport))
         self.conn.sendMsg(RemoteMsg('VERSION', '1.0'))
         self.__check_error(True, 5.0)
