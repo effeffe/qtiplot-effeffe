@@ -18857,7 +18857,7 @@ void ApplicationWindow::initCompleter()
 	words.append("cell");
 #ifdef SCRIPTING_PYTHON
 	if (scriptEnv->name() == QString("Python")){
-		QString fn = d_python_config_folder + "/qti_wordlist.txt";
+		QString fn = "/usr/share/qtiplot/qti_wordlist.txt";
 		QFile file(fn);
 		if (!file.open(QFile::ReadOnly)){
 			QMessageBox::critical(this, tr("QtiPlot - Warning"),
